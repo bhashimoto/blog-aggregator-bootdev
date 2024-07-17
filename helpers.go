@@ -6,14 +6,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
 )
 
+
 func getAPIKey(r *http.Request) (string, error) {
-	for name, values := range r.Header {
-		for _, value := range values {
-			log.Println(name, value)
-		}
-	}
 	fullAuth := r.Header.Get("Authorization")
 	if fullAuth == "" {
 		return "", errors.New("missing Authorization header")

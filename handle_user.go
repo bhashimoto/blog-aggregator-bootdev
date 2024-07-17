@@ -11,20 +11,7 @@ import (
 )
 
 
-func (cfg *apiConfig) HandleUserGet(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := getAPIKey(r)
-	if err != nil {
-		respondWithError(w, 401, err.Error())
-		return
-	}
-
-	ctx := context.Background()
-
-	user, err := cfg.db.GetUserByAPIKey(ctx, apiKey)
-	if err != nil {
-		respondWithError(w, 404, "user not found")
-		return
-	}
+func (cfg *apiConfig) HandleUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
 	respondWithJSON(w, 200, user)
 }
 

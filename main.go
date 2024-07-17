@@ -33,7 +33,7 @@ func main() {
 	mux.HandleFunc("GET /v1/healthz", HandleHealthz)
 	mux.HandleFunc("GET /v1/err", HandleError)	
 	mux.HandleFunc("POST /v1/users", cfg.HandleUserCreate)	
-	mux.HandleFunc("GET /v1/users", cfg.HandleUserGet)	
+	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.HandleUsersGet))	
 
 
 	log.Println("Starting server at port", port)
