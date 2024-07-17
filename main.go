@@ -34,6 +34,7 @@ func main() {
 	mux.HandleFunc("GET /v1/err", HandleError)	
 	mux.HandleFunc("POST /v1/users", cfg.HandleUserCreate)	
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.HandleUsersGet))	
+	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.HandleFeedsCreate))	
 
 
 	log.Println("Starting server at port", port)

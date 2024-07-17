@@ -7,25 +7,40 @@ package database
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createFeeed = `-- name: CreateFeeed :one
-INSERT INTO feeds (name, url, user_id)
-VALUES($1, $2, $3)
-RETURNING name, url, user_id
+INSERT INTO feeds (name, url, user_id, created_at, updated_at)
+VALUES($1, $2, $3, $4, $5)
+RETURNING name, created_at, updated_at, url, user_id
 `
 
 type CreateFeeedParams struct {
-	Name   string    `json:"name"`
-	Url    string    `json:"url"`
-	UserID uuid.UUID `json:"user_id"`
+	Name      string    `json:"name"`
+	Url       string    `json:"url"`
+	UserID    uuid.UUID `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateFeeed(ctx context.Context, arg CreateFeeedParams) (Feed, error) {
-	row := q.db.QueryRowContext(ctx, createFeeed, arg.Name, arg.Url, arg.UserID)
+	row := q.db.QueryRowContext(ctx, createFeeed,
+		arg.Name,
+		arg.Url,
+		arg.UserID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Feed
-	err := row.Scan(&i.Name, &i.Url, &i.UserID)
+	err := row.Scan(
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Url,
+		&i.UserID,
+	)
 	return i, err
 }

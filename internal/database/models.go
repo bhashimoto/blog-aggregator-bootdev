@@ -11,9 +11,11 @@ import (
 )
 
 type Feed struct {
-	Name   string    `json:"name"`
-	Url    string    `json:"url"`
-	UserID uuid.UUID `json:"user_id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Url       string    `json:"url"`
+	UserID    uuid.UUID `json:"user_id"`
 }
 
 type User struct {
