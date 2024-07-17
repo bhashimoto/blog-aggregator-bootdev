@@ -32,10 +32,16 @@ func main() {
 
 	mux.HandleFunc("GET /v1/healthz", HandleHealthz)
 	mux.HandleFunc("GET /v1/err", HandleError)	
+	
 	mux.HandleFunc("POST /v1/users", cfg.HandleUserCreate)	
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.HandleUsersGet))	
+	
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.HandleFeedsCreate))	
 	mux.HandleFunc("GET /v1/feeds", cfg.HandleFeedsGet)
+
+	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.HandleFeedFollowsGet))	
+	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.HandleFeedFollowsCreate))	
+	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", cfg.middlewareAuth(cfg.HandleFeedFollowsDelete))
 
 
 	log.Println("Starting server at port", port)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bhashimoto/blog-aggregator-bootdev/internal/database"
+	"github.com/google/uuid"
 )
 
 func (cfg *apiConfig) HandleFeedsGet(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,8 @@ func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 	ctx := context.Background()
-	feed, err := cfg.db.CreateFeeed(ctx, database.CreateFeeedParams{
+	feed, err := cfg.db.CreateFeed(ctx, database.CreateFeedParams{
+		ID: uuid.New(),
 		Name: params.Name,
 		Url: params.URL,
 		UserID: user.ID,
@@ -46,5 +48,22 @@ func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, 
 		respondWithError(w, 500, fmt.Sprintf("unable to create feed: %s", err.Error()))
 		return
 	}
-	respondWithJSON(w, 201, feed)
+
+	ff, err := cfg.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+		ID: uuid.New(),
+		UserID: user.ID,
+		FeedID: feed.ID,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	})
+
+	ret := struct {
+		Feed database.Feed		`json:"feed"`
+		FeedFollow database.FeedFollow	`json:"feed_follow"`
+	}{
+		Feed: feed,
+		FeedFollow: ff,
+	}
+
+	respondWithJSON(w, 201, ret)
 }

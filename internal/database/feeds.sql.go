@@ -12,13 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
-const createFeeed = `-- name: CreateFeeed :one
-INSERT INTO feeds (name, url, user_id, created_at, updated_at)
-VALUES($1, $2, $3, $4, $5)
-RETURNING name, created_at, updated_at, url, user_id
+const createFeed = `-- name: CreateFeed :one
+INSERT INTO feeds (id, name, url, user_id, created_at, updated_at)
+VALUES($1, $2, $3, $4, $5, $6)
+RETURNING id, name, created_at, updated_at, url, user_id
 `
 
-type CreateFeeedParams struct {
+type CreateFeedParams struct {
+	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Url       string    `json:"url"`
 	UserID    uuid.UUID `json:"user_id"`
@@ -26,8 +27,9 @@ type CreateFeeedParams struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (q *Queries) CreateFeeed(ctx context.Context, arg CreateFeeedParams) (Feed, error) {
-	row := q.db.QueryRowContext(ctx, createFeeed,
+func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, createFeed,
+		arg.ID,
 		arg.Name,
 		arg.Url,
 		arg.UserID,
@@ -36,6 +38,7 @@ func (q *Queries) CreateFeeed(ctx context.Context, arg CreateFeeedParams) (Feed,
 	)
 	var i Feed
 	err := row.Scan(
+		&i.ID,
 		&i.Name,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -46,7 +49,7 @@ func (q *Queries) CreateFeeed(ctx context.Context, arg CreateFeeedParams) (Feed,
 }
 
 const getAllFeeds = `-- name: GetAllFeeds :many
-SELECT name, created_at, updated_at, url, user_id
+SELECT id, name, created_at, updated_at, url, user_id
 FROM feeds
 `
 
@@ -60,6 +63,7 @@ func (q *Queries) GetAllFeeds(ctx context.Context) ([]Feed, error) {
 	for rows.Next() {
 		var i Feed
 		if err := rows.Scan(
+			&i.ID,
 			&i.Name,
 			&i.CreatedAt,
 			&i.UpdatedAt,
