@@ -10,6 +10,17 @@ import (
 	"github.com/bhashimoto/blog-aggregator-bootdev/internal/database"
 )
 
+func (cfg *apiConfig) HandleFeedsGet(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	feeds, err := cfg.db.GetAllFeeds(ctx)
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("could not retrieve feeds: %s", err.Error()))
+		return
+	}
+
+	respondWithJSON(w, 200, feeds)
+}
+
 func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
