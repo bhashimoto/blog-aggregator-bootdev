@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -34,6 +33,8 @@ func main() {
 	mux.HandleFunc("GET /v1/healthz", HandleHealthz)
 	mux.HandleFunc("GET /v1/err", HandleError)	
 	mux.HandleFunc("POST /v1/users", cfg.HandleUserCreate)	
+	mux.HandleFunc("GET /v1/users", cfg.HandleUserGet)	
+
 
 	log.Println("Starting server at port", port)
 	err = server.ListenAndServe()
@@ -44,37 +45,3 @@ func main() {
 }
 
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	dat, err := json.Marshal(payload)
-	if err != nil {
-		log.Printf("Error marhsaling JSON: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-	w.WriteHeader(code)
-	w.Write(dat)
-}
-
-func respondWithError(w http.ResponseWriter, code int, msg string) {
-	err := struct {
-		Error string `json:"error"`
-	}{
-		Error: msg,
-	}
-
-	respondWithJSON(w, code, err)
-}
-
-func HandleHealthz(w http.ResponseWriter, r *http.Request) {
-	resp := struct {
-		Status string `json:"status"`
-	}{
-		Status: "ok",
-	}
-	respondWithJSON(w, 200, resp)
-}
-
-func HandleError(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, 500, "Internal Server Error")
-}
