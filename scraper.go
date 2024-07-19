@@ -66,19 +66,19 @@ func (cfg *apiConfig) FetchFeeds(n int32) error {
 		wg.Add(1)
 		go func(Feed Feed){
 			defer wg.Done()
-			rssFeed, err := fetchFeed(feed)
+			rssFeed, err := cfg.fetchFeed(feed)
 			if err != nil {
 				log.Println(err.Error())
 				return
 			}
-			processFeed(rssFeed)
+			cfg.processFeed(rssFeed)
 			log.Println("Finished processing feed", feed.Name)
 		}(feed)
 	}
 	return nil
 }
 
-func fetchFeed(feed Feed) (RssFeed, error){
+func (cfg *apiConfig) fetchFeed(feed Feed) (RssFeed, error){
 	resp, err := http.Get(feed.Url)
 	if err != nil {
 		log.Println("error in http.Get")
@@ -96,11 +96,13 @@ func fetchFeed(feed Feed) (RssFeed, error){
 	if err != nil {
 		return RssFeed{}, err 
 	}
+
+	err = cfg.db.MarkFeedFetched(context.Background(), feed.ID)
 	return *data.Channel, nil
 
 }
 
-func processFeed(feed RssFeed) {
+func (cfg *apiConfig) processFeed(feed RssFeed) {
 	for _, item := range feed.Items {
 		fmt.Println(item.Title)
 	}
