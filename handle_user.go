@@ -11,7 +11,7 @@ import (
 )
 
 
-func (cfg *apiConfig) HandleUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *apiConfig) HandleUsersGet(w http.ResponseWriter, r *http.Request, user User) {
 	respondWithJSON(w, 200, user)
 }
 

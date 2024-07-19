@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
+
 func (cfg *apiConfig) HandleFeedsGet(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	feeds, err := cfg.db.GetAllFeeds(ctx)
@@ -22,7 +23,7 @@ func (cfg *apiConfig) HandleFeedsGet(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, 200, feeds)
 }
 
-func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, user User) {
 	type parameters struct {
 		Name string `json:"name"`
 		URL string `json:"url"`
@@ -58,12 +59,30 @@ func (cfg *apiConfig) HandleFeedsCreate(w http.ResponseWriter, r *http.Request, 
 	})
 
 	ret := struct {
-		Feed database.Feed		`json:"feed"`
+		Feed Feed		`json:"feed"`
 		FeedFollow database.FeedFollow	`json:"feed_follow"`
 	}{
-		Feed: feed,
+		Feed: databaseFeedToFeed(feed),
 		FeedFollow: ff,
 	}
 
 	respondWithJSON(w, 201, ret)
+}
+
+func (cfg *apiConfig) HandleFeedsDelete(w http.ResponseWriter, r *http.Request, user User) {
+	params := struct {
+		ID uuid.UUID `json:"id"`
+	}{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, 401, "invalid request")
+	}
+	err = cfg.db.DeleteFeed(context.Background(), params.ID)
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("error deletin feed: %s", err.Error()))
+	}
+
+	respondWithJSON(w, 204, "")
+	
 }

@@ -4,10 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/bhashimoto/blog-aggregator-bootdev/internal/database"
 )
 
-type authedHandler func(http.ResponseWriter, *http.Request, database.User)
+type authedHandler func(http.ResponseWriter, *http.Request, User)
 
 func (cfg *apiConfig) middlewareAuth(handler authedHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -17,11 +16,12 @@ func (cfg *apiConfig) middlewareAuth(handler authedHandler) http.HandlerFunc {
 			return
 		}
 		ctx := context.Background()
-		user, err := cfg.db.GetUserByAPIKey(ctx, apiKey)
+		dbUser, err := cfg.db.GetUserByAPIKey(ctx, apiKey)
 		if err != nil {
 			respondWithError(w, 404, "user not found")
 			return
 		}
+		user := databaseUserToUser(dbUser)
 		handler(w, r, user)
 	}
 }

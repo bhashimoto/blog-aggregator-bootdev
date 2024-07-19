@@ -12,7 +12,7 @@ import (
 )
 
 
-func (cfg *apiConfig) HandleFeedFollowsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *apiConfig) HandleFeedFollowsGet(w http.ResponseWriter, r *http.Request, user User) {
 	ctx := context.Background()
 	ffs, err := cfg.db.GetFeedFollowsFromUser(ctx, user.ID)
 	if err != nil {
@@ -23,7 +23,7 @@ func (cfg *apiConfig) HandleFeedFollowsGet(w http.ResponseWriter, r *http.Reques
 	respondWithJSON(w, 200, ffs)
 }
 
-func (cfg *apiConfig) HandleFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *apiConfig) HandleFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user User) {
 	feedFollowIDString := r.PathValue("feedFollowID")
 
 	if feedFollowIDString == "" {
@@ -61,7 +61,7 @@ func (cfg *apiConfig) HandleFeedFollowsDelete(w http.ResponseWriter, r *http.Req
 }
 
 
-func (cfg *apiConfig) HandleFeedFollowsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *apiConfig) HandleFeedFollowsCreate(w http.ResponseWriter, r *http.Request, user User) {
 	type parameters struct {
 		FeedID uuid.UUID `json:"feed_id"`
 	}
@@ -75,7 +75,7 @@ func (cfg *apiConfig) HandleFeedFollowsCreate(w http.ResponseWriter, r *http.Req
 	}
 
 	ctx := context.Background()
-	feedFollow, err := cfg.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
+	feedFollowDB, err := cfg.db.CreateFeedFollow(ctx, database.CreateFeedFollowParams{
 		ID: uuid.New(),
 		FeedID: params.FeedID,
 		UserID: user.ID,
@@ -87,5 +87,6 @@ func (cfg *apiConfig) HandleFeedFollowsCreate(w http.ResponseWriter, r *http.Req
 		respondWithError(w, 500, "unable to create feed follow")
 		return
 	}
+	feedFollow := databaseFeedFollowToFeedFollow(feedFollowDB)
 	respondWithJSON(w, 201, feedFollow)
 }
