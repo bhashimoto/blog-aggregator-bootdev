@@ -36,7 +36,7 @@ func main() {
 
 
 	log.Println("calling FetchFeeds")
-	go cfg.FetchFeedsRoutine(2, 60*time.Second)
+	go cfg.FetchFeedsRoutine(10, 60*time.Second)
 	log.Println("called FetchFeeds")
 
 
