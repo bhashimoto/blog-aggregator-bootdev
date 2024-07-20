@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -9,6 +10,9 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/bhashimoto/blog-aggregator-bootdev/internal/database"
+	"github.com/google/uuid"
 )
 
 type RssFeedXml struct {
@@ -103,8 +107,44 @@ func (cfg *apiConfig) fetchFeed(feed Feed) (RssFeed, error){
 }
 
 func (cfg *apiConfig) processFeed(feed RssFeed) {
+	dbFeed, err := cfg.db.GetFeedFromURL(context.Background(), feed.Link)
+	if err != nil {
+		log.Println("feed not found:", feed.Link)
+		return
+	}
 	for _, item := range feed.Items {
-		fmt.Println(item.Title)
+		log.Printf("[%s] Fetching post: %s", feed.Title, item.Title)
+		pubDate := sql.NullTime{
+			Time: time.Now(),
+			Valid: false,
+		}
+		if item.PubDate !=  "" {
+			parsedDate, err := time.Parse("Wed, 03 Apr 2024 00:00:00 +0000", item.PubDate)
+			if err != nil {
+				log.Println("error parsing date:", item.PubDate)
+			} else {
+				pubDate = sql.NullTime{
+					Time: parsedDate,
+					Valid: true,
+				}	
+			}
+		} 
+		dbPost, err := cfg.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID: uuid.New(),
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+			Title: item.Title,
+			Url: item.Link,
+			FeedID: dbFeed.ID,
+			Description: item.Description,
+			PublishedAt: pubDate,
+		})
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		log.Println("Inserted post:",dbPost.Title)
+
 	}
 }
 
