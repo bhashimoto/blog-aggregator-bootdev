@@ -22,3 +22,8 @@ WHERE id = $1;
 -- name: DeleteFeed :exec
 DELETE FROM feeds
 WHERE id = $1;
+
+-- name: GetFeedFromURL :one
+SELECT *
+FROM feeds
+WHERE url = $1;
