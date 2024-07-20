@@ -54,6 +54,7 @@ func main() {
 	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.HandleFeedFollowsCreate))	
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", cfg.middlewareAuth(cfg.HandleFeedFollowsDelete))
 
+	mux.HandleFunc("GET /v1/posts", cfg.middlewareAuth(cfg.HandlePostsGet))
 
 	log.Println("Starting server at port", port)
 	err = server.ListenAndServe()
